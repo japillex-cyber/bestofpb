@@ -1,0 +1,534 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum Role {
+  GUEST
+  USER
+  MEMBER
+  VENDOR
+  ADMIN
+}
+
+enum MembershipTier {
+  REGULAR
+  VIP
+}
+
+enum MembershipStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+  INACTIVE
+}
+
+enum VendorStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  INACTIVE
+}
+
+enum EventStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum EventSource {
+  ADMIN
+  VENDOR
+  PUBLIC
+}
+
+enum NominationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  FEATURED
+}
+
+enum PackageStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  REFUNDED
+  FAILED
+}
+
+enum OrderItemType {
+  MEMBERSHIP
+  PACKAGE
+  GIFT_MEMBERSHIP
+}
+
+// ─────────────────────────────────────────────
+// USER
+// ─────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  phone         String?
+  avatarUrl     String?
+  password      String?
+  role          Role      @default(USER)
+  stripeCustomerId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  membership    Membership?
+  vendor        Vendor?
+  orders        Order[]
+  nominations   Nomination[]
+  pollVotes     PollVote[]
+  giveawayEntry GiveawayEntry[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ─────────────────────────────────────────────
+// MEMBERSHIP
+// ─────────────────────────────────────────────
+
+model MembershipPlan {
+  id                   String         @id @default(cuid())
+  name                 String
+  tier                 MembershipTier
+  description          String?
+  price                Float
+  interval             String         // "month" | "year"
+  stripePriceId        String         @unique
+  stripeProductId      String
+  features             String[]
+  isActive             Boolean        @default(true)
+  isGiftable           Boolean        @default(true)
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  memberships Membership[]
+
+  @@map("membership_plans")
+}
+
+model Membership {
+  id                   String           @id @default(cuid())
+  userId               String           @unique
+  planId               String
+  tier                 MembershipTier
+  status               MembershipStatus @default(INACTIVE)
+  membershipNumber     String           @unique @default(cuid())
+  stripeSubscriptionId String?          @unique
+  stripeCustomerId     String?
+  currentPeriodStart   DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean          @default(false)
+  giftedBy             String?          // userId of gifter
+  qrCode               String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  user User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan MembershipPlan @relation(fields: [planId], references: [id])
+
+  @@map("memberships")
+}
+
+// ─────────────────────────────────────────────
+// VENDOR
+// ─────────────────────────────────────────────
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  vendors Vendor[]
+
+  @@map("categories")
+}
+
+model Vendor {
+  id                   String       @id @default(cuid())
+  userId               String       @unique
+  categoryId           String
+  name                 String
+  slug                 String       @unique
+  description          String?      @db.Text
+  address              String?
+  city                 String?
+  state                String?
+  zip                  String?
+  phone                String?
+  email                String?
+  website              String?
+  instagramHandle      String?
+  facebookUrl          String?
+  hours                Json?        // { mon: "9am-5pm", tue: "9am-5pm", ... }
+  photos               String[]
+  logoUrl              String?
+  status               VendorStatus @default(PENDING)
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  subscriptionStatus   String?
+  subscriptionPlanId   String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id])
+  deal     Deal?
+  events   Event[]
+
+  @@map("vendors")
+}
+
+model Deal {
+  id          String   @id @default(cuid())
+  vendorId    String   @unique
+  title       String
+  description String   @db.Text
+  imageUrl    String?
+  terms       String?  @db.Text
+  isActive    Boolean  @default(true)
+  memberOnly  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@map("deals")
+}
+
+// ─────────────────────────────────────────────
+// PACKAGES
+// ─────────────────────────────────────────────
+
+model Package {
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  description   String        @db.Text
+  category      String        // "bachelorette", "birthday", etc.
+  basePrice     Float
+  pricePerPerson Float?
+  minGroupSize  Int?
+  maxGroupSize  Int?
+  images        String[]
+  videoUrl      String?
+  itinerary     Json?         // array of { time, activity, location }
+  includes      String[]
+  excludes      String[]
+  quantity      Int?          // null = unlimited
+  soldCount     Int           @default(0)
+  status        PackageStatus @default(DRAFT)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  orderItems OrderItem[]
+
+  @@map("packages")
+}
+
+// ─────────────────────────────────────────────
+// ORDERS
+// ─────────────────────────────────────────────
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  status          OrderStatus @default(PENDING)
+  total           Float
+  stripePaymentId String?
+  promoCodeId     String?
+  discountAmount  Float?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user      User        @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+  promoCode PromoCode?  @relation(fields: [promoCodeId], references: [id])
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String        @id @default(cuid())
+  orderId    String
+  type       OrderItemType
+  packageId  String?
+  planId     String?
+  quantity   Int           @default(1)
+  unitPrice  Float
+  groupSize  Int?
+  giftEmail  String?       // for gift memberships
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  package Package? @relation(fields: [packageId], references: [id])
+
+  @@map("order_items")
+}
+
+model PromoCode {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  discountType   String    // "percent" | "fixed"
+  discountValue  Float
+  maxUses        Int?
+  usedCount      Int       @default(0)
+  expiresAt      DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+
+  orders Order[]
+
+  @@map("promo_codes")
+}
+
+// ─────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────
+
+model Event {
+  id          String      @id @default(cuid())
+  vendorId    String?
+  title       String
+  description String?     @db.Text
+  imageUrl    String?
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  address     String?
+  url         String?
+  isFree      Boolean     @default(true)
+  price       Float?
+  status      EventStatus @default(PENDING)
+  source      EventSource @default(ADMIN)
+  submittedBy String?     // email for public submissions
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  vendor Vendor? @relation(fields: [vendorId], references: [id])
+
+  @@map("events")
+}
+
+// ─────────────────────────────────────────────
+// NOMINATIONS
+// ─────────────────────────────────────────────
+
+model Nomination {
+  id              String           @id @default(cuid())
+  userId          String?
+  businessName    String
+  instagramHandle String?
+  reason          String           @db.Text
+  category        String?
+  status          NominationStatus @default(PENDING)
+  submittedByName String?
+  submittedByEmail String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("nominations")
+}
+
+// ─────────────────────────────────────────────
+// POLLS
+// ─────────────────────────────────────────────
+
+model Poll {
+  id        String     @id @default(cuid())
+  question  String
+  imageUrl  String?
+  isActive  Boolean    @default(true)
+  endsAt    DateTime?
+  createdAt DateTime   @default(now())
+
+  options   PollOption[]
+  votes     PollVote[]
+
+  @@map("polls")
+}
+
+model PollOption {
+  id     String @id @default(cuid())
+  pollId String
+  label  String
+  order  Int    @default(0)
+
+  poll  Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  votes PollVote[]
+
+  @@map("poll_options")
+}
+
+model PollVote {
+  id       String @id @default(cuid())
+  pollId   String
+  optionId String
+  userId   String
+
+  poll   Poll       @relation(fields: [pollId], references: [id])
+  option PollOption @relation(fields: [optionId], references: [id])
+  user   User       @relation(fields: [userId], references: [id])
+
+  @@unique([pollId, userId])
+  @@map("poll_votes")
+}
+
+// ─────────────────────────────────────────────
+// GIVEAWAYS
+// ─────────────────────────────────────────────
+
+model Giveaway {
+  id          String   @id @default(cuid())
+  title       String
+  description String?  @db.Text
+  imageUrl    String?
+  linkUrl     String?
+  isActive    Boolean  @default(false)
+  endsAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  entries GiveawayEntry[]
+
+  @@map("giveaways")
+}
+
+model GiveawayEntry {
+  id         String   @id @default(cuid())
+  giveawayId String
+  userId     String?
+  name       String
+  email      String
+  phone      String?
+  createdAt  DateTime @default(now())
+
+  giveaway Giveaway @relation(fields: [giveawayId], references: [id])
+  user     User?    @relation(fields: [userId], references: [id])
+
+  @@unique([giveawayId, email])
+  @@map("giveaway_entries")
+}
+
+// ─────────────────────────────────────────────
+// FAQ
+// ─────────────────────────────────────────────
+
+model FAQ {
+  id            String   @id @default(cuid())
+  question      String
+  answer        String   @db.Text
+  instagramUrl  String?
+  instagramImage String?
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+// ─────────────────────────────────────────────
+// BLOG (future)
+// ─────────────────────────────────────────────
+
+model Post {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String   @db.Text
+  excerpt     String?
+  coverImage  String?
+  tags        String[]
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  authorId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("posts")
+}
+
+// ─────────────────────────────────────────────
+// INVITE CODES (added from v2)
+// ─────────────────────────────────────────────
+
+model InviteCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  maxUses   Int?
+  usedCount Int       @default(0)
+  isActive  Boolean   @default(true)
+  expiresAt DateTime?
+  note      String?
+  createdAt DateTime  @default(now())
+
+  @@map("invite_codes")
+}
