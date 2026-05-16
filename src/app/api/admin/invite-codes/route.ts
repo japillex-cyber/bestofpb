@@ -1,10 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
-
 export const dynamic = 'force-dynamic'
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { db } from '@/lib/db'
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session || (session.user as any).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { code, maxUses, note, expiresAt } = await req.json()
 
     if (!code) return NextResponse.json({ error: 'Code is required.' }, { status: 400 })
@@ -30,6 +36,11 @@ export async function POST(req: NextRequest) {
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session || (session.user as any).role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const codes = await db.inviteCode.findMany({ orderBy: { createdAt: 'desc' } })
     return NextResponse.json({ codes })
   } catch (err) {
