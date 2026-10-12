@@ -5,8 +5,16 @@ import { getViewer } from '@/lib/viewer'
 
 // Homepage spotlight. Premium Exposure businesses rotate on every visit.
 export default async function FeaturedVendors() {
-  const viewer = await getViewer()
-  const spotlight = await getSpotlightBusinesses(viewer.isPaidMember, 4)
+  let viewer: Awaited<ReturnType<typeof getViewer>>
+  let spotlight: Awaited<ReturnType<typeof getSpotlightBusinesses>>
+  try {
+    viewer = await getViewer()
+    spotlight = await getSpotlightBusinesses(viewer.isPaidMember, 4)
+  } catch (err) {
+    // Never take the homepage down because of this section.
+    console.error('Spotlight failed:', err)
+    return null
+  }
   if (spotlight.length === 0) return null
 
   return (
