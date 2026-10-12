@@ -42,12 +42,12 @@ export default function LoginPage() {
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
             <div style={{ width: 44, height: 44, background: '#0057FF', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>🌊</div>
             <div>
-              <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 17, fontWeight: 700, color: '#fff', lineHeight: 1 }}>Pacific Beach</div>
+              <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 17, fontWeight: 700, color: '#fff', lineHeight: 1 }}>San Diego</div>
               <div style={{ fontSize: 9, fontWeight: 600, color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', textTransform: 'uppercase' }}>Best of PB</div>
             </div>
           </Link>
           <p style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 22, fontWeight: 400, color: 'rgba(255,255,255,0.8)', lineHeight: 1.5, fontStyle: 'italic', maxWidth: 300 }}>
-            "Your all-in-one guide to the best of Pacific Beach."
+            "Your all-in-one guide to the best of San Diego."
           </p>
         </div>
       </div>
@@ -61,7 +61,7 @@ export default function LoginPage() {
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
               <div style={{ width: 40, height: 40, background: '#0057FF', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>🌊</div>
               <div>
-                <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 16, fontWeight: 700, color: '#0D1020', lineHeight: 1 }}>Pacific Beach</div>
+                <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 16, fontWeight: 700, color: '#0D1020', lineHeight: 1 }}>San Diego</div>
                 <div style={{ fontSize: 9, fontWeight: 600, color: '#0057FF', letterSpacing: '2px', textTransform: 'uppercase' }}>Best of PB</div>
               </div>
             </Link>

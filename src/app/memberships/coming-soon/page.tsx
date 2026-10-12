@@ -9,10 +9,10 @@ export default function ComingSoonPage() {
       <div style={{ minHeight: '70vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 40, paddingTop: 'calc(var(--nav-height) + 40px)', background: 'var(--navy)' }}>
         <div style={{ fontSize: 64, marginBottom: 24 }}>🎉</div>
         <h1 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 36, fontWeight: 800, color: '#fff', letterSpacing: '-0.5px', marginBottom: 14 }}>
-          Memberships launching soon!
+          Payments are almost ready!
         </h1>
         <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.5)', maxWidth: 460, lineHeight: 1.7, marginBottom: 32 }}>
-          We are setting up payment processing. Check back soon — memberships will be live shortly!
+          Your free account is all set. Paid plans open as soon as payment processing goes live — we’ll let you know.
         </p>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Link href="/" className="btn btn-primary btn-lg">Back to Home</Link>

@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-const QUICK = ['PB Nights', 'Get Outside', "I'm Hungry", 'Self Care', 'Fitness', 'Cozy Stays']
+const QUICK: [string, string][] = [['SD Nights','sd-nights'], ['Get Outside','get-outside'], ["I'm Hungry",'hungry'], ['Self Care','self-care'], ['Healthy & Fit','fitness'], ['Cozy Stays','cozy-stays']]
 
 export default function Hero() {
   const router = useRouter()
@@ -22,7 +22,7 @@ export default function Hero() {
       <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }}>
         <img
           src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1800&q=80"
-          alt="Pacific Beach"
+          alt="San Diego"
           style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(4,9,28,0.88) 0%, rgba(4,9,28,0.65) 60%, rgba(4,9,28,0.5) 100%)' }} />
@@ -43,7 +43,7 @@ export default function Hero() {
           padding: '6px 14px', marginBottom: 22,
         }}>
           <span style={{ width: 7, height: 7, background: '#4ADE80', borderRadius: '50%', flexShrink: 0 }} />
-          <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px' }}>Pacific Beach · San Diego, CA</span>
+          <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.3px' }}>San Diego, CA</span>
         </div>
 
         {/* Headline */}
@@ -55,7 +55,7 @@ export default function Hero() {
           marginBottom: 16, maxWidth: 700,
         }}>
           Discover the Best<br />
-          <span style={{ color: '#60A5FA' }}>Pacific Beach</span><br />
+          <span style={{ color: '#60A5FA' }}>San Diego</span><br />
           Has to Offer
         </h1>
 
@@ -65,7 +65,7 @@ export default function Hero() {
           lineHeight: 1.75, marginBottom: 28,
           maxWidth: 480, fontWeight: 400,
         }}>
-          Exclusive member deals, curated experiences, and your insider guide to everything great in PB.
+          Exclusive member deals, curated experiences, and your insider guide to everything great in SD.
         </p>
 
         {/* Search bar */}
@@ -83,7 +83,7 @@ export default function Hero() {
               placeholder="Search restaurants, activities, deals..."
               value={q}
               onChange={e => setQ(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && router.push(`/shop-local?q=${q}`)}
+              onKeyDown={e => e.key === 'Enter' && router.push(`/shop-local?q=${encodeURIComponent(q)}`)}
               style={{
                 flex: 1, border: 'none', outline: 'none',
                 fontSize: 15, color: '#1a1f30',
@@ -91,7 +91,7 @@ export default function Hero() {
               }}
             />
             <button
-              onClick={() => router.push(`/shop-local?q=${q}`)}
+              onClick={() => router.push(`/shop-local?q=${encodeURIComponent(q)}`)}
               style={{
                 background: '#0057FF', color: '#fff',
                 border: 'none', borderRadius: 10,
@@ -104,8 +104,8 @@ export default function Hero() {
           </div>
           {/* Quick links */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 10px 0' }}>
-            {QUICK.map(item => (
-              <a key={item} href={`/shop-local?cat=${item.toLowerCase().replace(/\s+/g, '-').replace("'", '')}`} style={{
+            {QUICK.map(([item, slug]) => (
+              <a key={slug} href={`/shop-local?cat=${slug}`} style={{
                 fontSize: 12, fontWeight: 500, padding: '4px 11px',
                 background: '#f1f3f7', border: '1px solid #e4e7ef',
                 borderRadius: 999, color: '#4a5268', textDecoration: 'none',
@@ -117,7 +117,7 @@ export default function Hero() {
 
         {/* Stats */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-          {[['50+', 'Local Businesses'], ['2,400+', 'Active Members'], ['$200+', 'Avg. Monthly Savings'], ['4.9★', 'Member Rating']].map(([n, l], i) => (
+          {[['Free', 'To Join'], ['3 Months', 'Free Membership'], ['$10/mo', 'After That'], ['100%', 'Local']].map(([n, l], i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               {i > 0 && <div style={{ width: 1, height: 30, background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />}
               <div>

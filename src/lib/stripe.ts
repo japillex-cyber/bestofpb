@@ -1,9 +1,19 @@
 import Stripe from "stripe"
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder", {
   apiVersion: "2024-04-10",
   typescript: true,
 })
+
+// True once real Stripe keys are added in Vercel.
+export function stripeConfigured() {
+  const key = process.env.STRIPE_SECRET_KEY
+  return !!key && key !== "sk_test_placeholder" && /^(sk|rk)_(test|live)_/.test(key)
+}
+
+export function appUrl() {
+  return (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || "http://localhost:3000").replace(/\/$/, "")
+}
 
 // ─────────────────────────────────────────────
 // Customer helpers

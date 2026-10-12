@@ -8,6 +8,8 @@ import MembershipSection from '@/components/home/MembershipSection'
 import EventsPreview from '@/components/home/EventsPreview'
 import SubmissionBanner from '@/components/home/SubmissionBanner'
 
+export const dynamic = 'force-dynamic'
+
 export default function HomePage() {
   return (
     <>

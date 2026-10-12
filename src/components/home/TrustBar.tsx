@@ -4,7 +4,7 @@ export default function TrustBar() {
     { n: '2,400+', l: 'Active Members' },
     { n: '$200+',  l: 'Avg. Monthly Savings' },
     { n: '4.9★',   l: 'Member Rating' },
-    { n: '3 yrs',  l: 'Serving PB' },
+    { n: '3 yrs',  l: 'Serving SD' },
   ]
   return (
     <>

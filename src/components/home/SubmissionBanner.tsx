@@ -13,7 +13,7 @@ export default function SubmissionBanner() {
           <div>
             <span className="section-eyebrow section-eyebrow-inv">Community</span>
             <h2 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 36, fontWeight: 800, color: '#fff', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: 16 }}>
-              Know a Local Gem?<br />Share It With PB.
+              Know a Local Gem?<br />Share It With SD.
             </h2>
             <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, marginBottom: 28 }}>
               Nominate a business, artist, creator, or local brand you love. We feature the best of what the community discovers.

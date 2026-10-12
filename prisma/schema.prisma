@@ -32,6 +32,14 @@ enum MembershipStatus {
   INACTIVE
 }
 
+// Paid business plans. FREE = signed up, not listed publicly.
+enum BusinessPlan {
+  FREE
+  STARTER
+  COMMUNITY
+  PREMIUM
+}
+
 enum VendorStatus {
   PENDING
   ACTIVE
@@ -213,7 +221,7 @@ model Category {
 
 model Vendor {
   id                   String       @id @default(cuid())
-  userId               String       @unique
+  userId               String?      @unique
   categoryId           String
   name                 String
   slug                 String       @unique
@@ -230,6 +238,17 @@ model Vendor {
   hours                Json?        // { mon: "9am-5pm", tue: "9am-5pm", ... }
   photos               String[]
   logoUrl              String?
+  tagline              String?
+  neighborhood         String?
+  bookingUrl           String?
+  reservationUrl       String?
+  orderUrl             String?
+  mapsUrl              String?
+  instagramPosts       String[]     @default([]) // links to IG posts we made for them
+  guides               String[]     @default([]) // community guide slugs
+  plan                 BusinessPlan @default(FREE)
+  priority             Int          @default(0)  // higher = shown first within a plan
+  foundingMember       Boolean      @default(false)
   status               VendorStatus @default(PENDING)
   stripeCustomerId     String?
   stripeSubscriptionId String?
@@ -238,7 +257,7 @@ model Vendor {
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @updatedAt
 
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   category Category @relation(fields: [categoryId], references: [id])
   deal     Deal?
   events   Event[]

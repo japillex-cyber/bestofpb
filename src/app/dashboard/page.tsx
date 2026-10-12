@@ -12,6 +12,11 @@ export default function DashboardPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('Overview')
+  const [me, setMe] = useState<any>(null)
+
+  useEffect(() => {
+    if (status === 'authenticated') fetch('/api/me', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(setMe).catch(() => {})
+  }, [status])
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login?callbackUrl=/dashboard')
@@ -31,8 +36,8 @@ export default function DashboardPage() {
   if (!session) return null
 
   const user = session.user as any
-  const isMember = user.role === 'MEMBER' || user.role === 'ADMIN'
-  const isVIP = user.role === 'ADMIN' // treat admin as VIP for demo
+  const isMember = !!me?.isPaidMember
+  const isVIP = isMember && (me?.membership?.tier === 'VIP' || user.role === 'ADMIN')
 
   return (
     <>
@@ -75,8 +80,8 @@ export default function DashboardPage() {
 
         {/* Content */}
         <div className="container" style={{ padding: '32px 24px 80px' }}>
-          {activeTab === 'Overview'        && <OverviewTab isMember={isMember} isVIP={isVIP} />}
-          {activeTab === 'Membership Card' && <MembershipCardTab isMember={isMember} user={user} isVIP={isVIP} />}
+          {activeTab === 'Overview'        && <OverviewTab isMember={isMember} isVIP={isVIP} me={me} />}
+          {activeTab === 'Membership Card' && <MembershipCardTab isMember={isMember} user={user} isVIP={isVIP} me={me} />}
           {activeTab === 'Purchases'       && <PurchasesTab />}
           {activeTab === 'Profile'         && <ProfileTab user={user} />}
         </div>
@@ -87,14 +92,22 @@ export default function DashboardPage() {
 }
 
 // ── Overview Tab ─────────────────────────────────────
-function OverviewTab({ isMember, isVIP }: any) {
+function OverviewTab({ isMember, isVIP, me }: any) {
+  const m = me?.membership
+  const renew = m?.currentPeriodEnd ? new Date(m.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : null
+  const statusLine = !m ? '' : m.status === 'TRIALING' ? `Free months end ${renew ?? 'soon'}` : m.cancelAtPeriodEnd ? `Ends ${renew}` : renew ? `Renews monthly · next ${renew}` : 'Renews monthly'
+  const openBilling = async () => {
+    const res = await fetch('/api/billing/portal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ returnTo: '/dashboard' }) })
+    const d = await res.json().catch(() => ({}))
+    if (d.url) window.location.href = d.url; else alert(d.error ?? 'Could not open billing.')
+  }
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
       {!isMember ? (
         <div style={{ background: 'linear-gradient(135deg,#0d1835,#0b2d60)', border: '1px solid rgba(96,165,250,0.2)', borderRadius: 18, padding: 28, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 20, flexWrap: 'wrap' }}>
           <div>
             <h3 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 6 }}>You don't have a membership yet</h3>
-            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>Join to unlock exclusive deals at 50+ Pacific Beach businesses.</p>
+            <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6 }}>Join the SD Social Club to unlock exclusive deals at local San Diego businesses.</p>
           </div>
           <Link href="/memberships" className="btn btn-primary btn-lg">Get Membership →</Link>
         </div>
@@ -105,8 +118,9 @@ function OverviewTab({ isMember, isVIP }: any) {
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ADE80', display: 'inline-block' }} />
               <span style={{ fontSize: 12, fontWeight: 700, color: '#4ADE80', letterSpacing: '0.5px' }}>ACTIVE MEMBERSHIP</span>
             </div>
-            <h3 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 20, fontWeight: 700, color: isVIP ? '#F0D98A' : '#fff', marginBottom: 4 }}>{isVIP ? 'VIP Member' : 'PB Member'}</h3>
-            <p style={{ fontSize: 13, color: isVIP ? 'rgba(201,168,76,0.5)' : 'rgba(255,255,255,0.4)' }}>Renews annually · Active since 2025</p>
+            <h3 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 20, fontWeight: 700, color: isVIP ? '#F0D98A' : '#fff', marginBottom: 4 }}>{isVIP ? 'VIP Local Pass' : 'Local Insider'}</h3>
+            <p style={{ fontSize: 13, color: isVIP ? 'rgba(201,168,76,0.5)' : 'rgba(255,255,255,0.4)' }}>{statusLine}</p>
+            {me?.user?.hasBilling && <button onClick={openBilling} style={{ marginTop: 8, background: 'none', border: 'none', padding: 0, fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.6)', textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit' }}>Billing & cancel</button>}
           </div>
           <Link href="/dashboard" onClick={() => {}} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: '#fff', fontSize: 13, fontWeight: 600, padding: '10px 20px', borderRadius: 10, textDecoration: 'none' }}>
             View My Card →
@@ -153,11 +167,11 @@ function OverviewTab({ isMember, isVIP }: any) {
 }
 
 // ── Premium Membership Card Tab ───────────────────────
-function MembershipCardTab({ isMember, user, isVIP }: any) {
+function MembershipCardTab({ isMember, user, isVIP, me }: any) {
   const [flipped, setFlipped] = useState(false)
 
   // Generate member number from user id or fallback
-  const memberNumber = 'BOPB-2025-' + String(Math.floor(Math.random() * 90000) + 10000).slice(0, 5)
+  const memberNumber: string = me?.membership?.membershipNumber ?? (user.role === 'ADMIN' ? 'ADMIN' : '—')
   const cardHolder = user?.name?.toUpperCase() ?? 'MEMBER NAME'
   const secondLine = 'PACIFIC BEACH, CA'
   const validThru = '12/26'
@@ -167,7 +181,7 @@ function MembershipCardTab({ isMember, user, isVIP }: any) {
       <div style={{ textAlign: 'center', padding: '60px 0' }}>
         <div style={{ fontSize: 56, marginBottom: 20 }}>💳</div>
         <h3 style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 24, fontWeight: 700, marginBottom: 10 }}>No membership yet</h3>
-        <p style={{ fontSize: 15, color: 'var(--gray-500)', marginBottom: 28, maxWidth: 380, margin: '0 auto 28px' }}>Join Best of PB to get your premium membership card with QR code and exclusive deals.</p>
+        <p style={{ fontSize: 15, color: 'var(--gray-500)', marginBottom: 28, maxWidth: 380, margin: '0 auto 28px' }}>Join the SD Social Club to get your membership card with QR code and exclusive deals.</p>
         <Link href="/memberships" className="btn btn-primary btn-lg">Get Your Membership Card</Link>
       </div>
     )
@@ -226,7 +240,7 @@ function MembershipCardTab({ isMember, user, isVIP }: any) {
               {/* Logo area */}
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 13, fontWeight: 800, color: isVIP ? '#F0D98A' : '#60A5FA', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 2 }}>BEST OF PB</div>
-                <div style={{ fontSize: 9, color: isVIP ? 'rgba(240,217,138,0.5)' : 'rgba(96,165,250,0.5)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>Pacific Beach, CA</div>
+                <div style={{ fontSize: 9, color: isVIP ? 'rgba(240,217,138,0.5)' : 'rgba(96,165,250,0.5)', letterSpacing: '1.5px', textTransform: 'uppercase' }}>San Diego, CA</div>
                 {isVIP && <div style={{ marginTop: 4, fontSize: 9, fontWeight: 700, color: '#C8962A', letterSpacing: '2px', textTransform: 'uppercase' }}>⭐ VIP</div>}
               </div>
             </div>
@@ -277,7 +291,9 @@ function MembershipCardTab({ isMember, user, isVIP }: any) {
 
               {/* QR Code placeholder */}
               <div style={{ width: 70, height: 70, background: '#fff', borderRadius: 8, padding: 6, flexShrink: 0 }}>
-                <div style={{ width: '100%', height: '100%', background: 'repeating-conic-gradient(#000 0% 25%, transparent 0% 50%) 0 0/8px 8px', borderRadius: 2 }} />
+                {me?.membership?.qrCode
+                  ? <img src={me.membership.qrCode} alt="Membership QR code" style={{ width: '100%', height: '100%', display: 'block' }} />
+                  : <div style={{ width: '100%', height: '100%', background: 'repeating-conic-gradient(#000 0% 25%, transparent 0% 50%) 0 0/8px 8px', borderRadius: 2 }} />}
               </div>
             </div>
 

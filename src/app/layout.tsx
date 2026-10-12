@@ -7,8 +7,8 @@ import { Toaster } from '@/components/ui/toaster'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Best of PB — Pacific Beach',
-  description: 'Discover the best businesses, events, and experiences in Pacific Beach, San Diego.',
+  title: 'Best of PB — San Diego',
+  description: 'Discover the best businesses, events, and experiences in San Diego.',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

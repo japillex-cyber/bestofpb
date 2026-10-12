@@ -9,7 +9,7 @@ const LINKS = [
   { label: 'Events',      href: '/events' },
   { label: 'Packages',    href: '/packages' },
   { label: 'Memberships', href: '/memberships' },
-  { label: 'Submissions', href: '/submissions' },
+  { label: 'Blog',        href: '/blog' },
   { label: 'Store',       href: '/store' },
 ]
 
@@ -49,7 +49,7 @@ export default function Navbar() {
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}>
             <div style={{ width: 36, height: 36, background: 'var(--blue)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🌊</div>
             <div>
-              <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1 }}>Pacific Beach</div>
+              <div style={{ fontFamily: "'Bricolage Grotesque',sans-serif", fontSize: 13, fontWeight: 700, color: '#fff', lineHeight: 1 }}>San Diego</div>
               <div style={{ fontSize: 8, fontWeight: 600, color: 'var(--blue)', letterSpacing: '2px', textTransform: 'uppercase' }}>Best of PB</div>
             </div>
           </Link>
@@ -74,6 +74,9 @@ export default function Navbar() {
                     </div>
                     <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)', fontWeight: 500 }}>{user?.name?.split(' ')[0]}</span>
                   </Link>
+                  {user?.role === 'VENDOR' && (
+                    <Link href="/business" style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 6, textDecoration: 'none' }}>MY BUSINESS</Link>
+                  )}
                   {user?.role === 'ADMIN' && (
                     <Link href="/admin" style={{ background: '#EF4444', color: '#fff', fontSize: 11, fontWeight: 700, padding: '5px 10px', borderRadius: 6, textDecoration: 'none', letterSpacing: '0.3px' }}>ADMIN</Link>
                   )}
@@ -131,6 +134,11 @@ export default function Navbar() {
                   <Link href="/dashboard" style={{ display: 'block', textAlign: 'center', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: 14, fontWeight: 600, padding: '13px', borderRadius: 10, textDecoration: 'none' }}>
                     👤 My Dashboard
                   </Link>
+                  {user?.role === 'VENDOR' && (
+                    <Link href="/business" style={{ display: 'block', textAlign: 'center', background: 'rgba(255,255,255,0.08)', color: '#fff', fontSize: 14, fontWeight: 600, padding: '13px', borderRadius: 10, textDecoration: 'none' }}>
+                      🏪 My Business
+                    </Link>
+                  )}
                   {user?.role === 'ADMIN' && (
                     <Link href="/admin" style={{ display: 'block', textAlign: 'center', background: '#EF4444', color: '#fff', fontSize: 14, fontWeight: 700, padding: '13px', borderRadius: 10, textDecoration: 'none' }}>
                       🔧 Admin Panel

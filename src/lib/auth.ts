@@ -27,7 +27,7 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) throw new Error('Invalid credentials')
-        const user = await db.user.findUnique({ where: { email: credentials.email } })
+        const user = await db.user.findFirst({ where: { email: { equals: credentials.email.trim(), mode: 'insensitive' } } })
         if (!user || !user.password) throw new Error('No account found')
         const valid = await compare(credentials.password, user.password)
         if (!valid) throw new Error('Incorrect password')
@@ -38,6 +38,11 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) { token.id = user.id; token.role = (user as any).role }
+      // Keep the role fresh (e.g. after paying for a membership or setting up a business).
+      else if (token.id) {
+        const fresh = await db.user.findUnique({ where: { id: token.id as string }, select: { role: true } }).catch(() => null)
+        if (fresh) token.role = fresh.role
+      }
       return token
     },
     async session({ session, token }) {

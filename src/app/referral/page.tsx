@@ -116,7 +116,7 @@ export default function ReferralPage() {
                     style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#0B7A4B', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}
                   >💬 Send via Text</a>
                   <a
-                    href={`mailto:?subject=Join Best of PB!&body=${encodeURIComponent(shareText)}`}
+                    href={`mailto:?subject=Join the SD Social Club!&body=${encodeURIComponent(shareText)}`}
                     style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 10, padding: '10px 18px', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}
                   >✉️ Send Email</a>
                 </div>

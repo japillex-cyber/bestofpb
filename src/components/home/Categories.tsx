@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
 const CATS = [
-  { slug: 'pb-nights',      label: 'PB Nights',      img: 'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=200&q=80' },
+  { slug: 'sd-nights',      label: 'SD Nights',      img: 'https://images.unsplash.com/photo-1566417713940-fe7c737a9ef2?w=200&q=80' },
   { slug: 'get-outside',    label: 'Get Outside',     img: 'https://images.unsplash.com/photo-1502680390469-be75c86b636f?w=200&q=80' },
   { slug: 'hungry',         label: "I'm Hungry",      img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200&q=80' },
   { slug: 'fitness',        label: 'Healthy & Fit',   img: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&q=80' },
@@ -73,12 +73,12 @@ export default function Categories() {
         </div>
       </div>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         a:hover > div {
           transform: translateY(-3px);
           box-shadow: 0 8px 24px rgba(0,0,0,0.18) !important;
         }
-      `}</style>
+      ` }} />
     </section>
   )
 }
