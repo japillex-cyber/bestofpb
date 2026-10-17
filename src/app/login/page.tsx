@@ -20,7 +20,11 @@ export default function LoginPage() {
     if (res?.error) {
       setError('Invalid email or password. Please try again.')
     } else {
-      router.push('/')
+      // Go back to the page that sent us here (e.g. /admin), but only same-site paths.
+      const cb = new URLSearchParams(window.location.search).get('callbackUrl') || '/'
+      const dest = cb.startsWith('/') && !cb.startsWith('//') ? cb : '/'
+      router.push(dest)
+      router.refresh()
     }
   }
 
