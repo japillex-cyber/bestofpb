@@ -43,7 +43,7 @@ export default function AdminMembersPage() {
   const [rows, setRows] = useState<Row[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
-  const [filter, setFilter] = useState('MEMBERS')
+  const [filter, setFilter] = useState('ALL')
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Row | null>(null)
   const [form, setForm] = useState<Form>({ tier: 'REGULAR', status: 'ACTIVE', currentPeriodEnd: '', cancelAtPeriodEnd: false })
@@ -167,8 +167,8 @@ export default function AdminMembersPage() {
           <input type="text" placeholder="Search name, email or member #" value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, border: 'none', outline: 'none', fontSize: 13, fontFamily: 'inherit', background: 'transparent' }} />
         </div>
         <select value={filter} onChange={e => setFilter(e.target.value)} style={{ background: '#fff', border: '1.5px solid #E4E7EF', borderRadius: 9, padding: '0 14px', fontSize: 13, fontFamily: 'inherit', outline: 'none', height: 42, cursor: 'pointer', color: '#1A1F30' }}>
-          <option value="MEMBERS">Members</option>
           <option value="ALL">All accounts</option>
+          <option value="MEMBERS">Members only</option>
           <option value="NONE">No membership</option>
           <option value="VIP">VIP Local Pass</option>
           <option value="REGULAR">Local Insider</option>
