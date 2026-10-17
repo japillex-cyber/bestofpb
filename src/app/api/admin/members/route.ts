@@ -11,7 +11,7 @@ export async function GET() {
       id: true, name: true, email: true, phone: true, role: true, createdAt: true,
       membership: {
         select: {
-          tier: true, status: true, membershipNumber: true, currentPeriodStart: true,
+          tier: true, status: true, membershipNumber: true, qrCode: true, currentPeriodStart: true,
           currentPeriodEnd: true, cancelAtPeriodEnd: true, stripeSubscriptionId: true, createdAt: true,
         },
       },

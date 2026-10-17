@@ -1,11 +1,13 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
 import { AdminLayout } from '@/components/admin/AdminLayout'
+import { MembershipCard } from '@/components/membership/MembershipCard'
 
 type Membership = {
   tier: 'REGULAR' | 'VIP'
   status: 'ACTIVE' | 'TRIALING' | 'PAST_DUE' | 'CANCELED' | 'INACTIVE'
   membershipNumber: string
+  qrCode: string | null
   currentPeriodStart: string | null
   currentPeriodEnd: string | null
   cancelAtPeriodEnd: boolean
@@ -238,6 +240,25 @@ export default function AdminMembersPage() {
             </div>
 
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div>
+                <label style={lbl}>Card preview</label>
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0 4px', opacity: PAID.includes(form.status) ? 1 : 0.45, filter: PAID.includes(form.status) ? 'none' : 'grayscale(0.6)', transition: 'opacity .2s' }}>
+                  <MembershipCard
+                    isVIP={form.tier === 'VIP'}
+                    holderName={editing.name || editing.email.split('@')[0]}
+                    memberNumber={editing.membership?.membershipNumber ?? 'SDSC-NEW-0000'}
+                    qrCode={editing.membership?.qrCode}
+                    validThru={form.currentPeriodEnd || null}
+                    maxWidth={400}
+                  />
+                </div>
+                <div style={{ fontSize: 11.5, color: PAID.includes(form.status) ? '#9AA3B8' : '#B91C1C', textAlign: 'center', marginTop: 8 }}>
+                  {PAID.includes(form.status)
+                    ? (editing.membership ? 'Tap the card to flip it. This is what the member sees on their dashboard.' : 'Tap to flip. The member number and QR code are created when you save.')
+                    : 'With this status the member has no access and sees "No membership yet" instead of the card.'}
+                </div>
+              </div>
+
               {editing.membership?.stripeSubscriptionId && (
                 <div style={{ background: '#FFF7E6', border: '1px solid #F5D9A8', borderRadius: 10, padding: '10px 12px', fontSize: 12.5, color: '#8A5A00', lineHeight: 1.55 }}>
                   This person pays through Stripe. Changes here update the site right away, but their Stripe billing isn&apos;t changed, and the next Stripe renewal or payment can overwrite the tier, status and dates. To change what they&apos;re charged, change it in Stripe too.
